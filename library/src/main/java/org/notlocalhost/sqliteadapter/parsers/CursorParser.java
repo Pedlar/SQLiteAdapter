@@ -15,6 +15,11 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Created by pedlar on 9/1/14.
  */
+/*
+    TODO:
+        Support returning a List of objects
+        only return the first one when a single object
+ */
 public class CursorParser {
     public Object objectFromCursor(AdapterContext context, MethodInfo methodInfo, Cursor cursor) {
         try {
