@@ -1,0 +1,21 @@
+CursoerParser
+    Support returning a List of objects
+    only return the first one when a single object
+
+    Create constructor factory that can construnct Interface types to a general type they use
+
+AnnotationProcessor
+    Safeguard against having @Where and @ColumnName on paramater.
+    Safeguard Class against implements Schema interface.
+
+Table Schema:
+    Foreign Key support (Mapping SchemaB to a variable on SchemaA)
+    allow "Lists" so that map to other tables in a "one-to-many" fashion. ( Schema A: List<SchemaB> x; when query: query SchemaB for "x_id" )
+
+    Store a schema overview in "schemas" with a version#, onUpgrade go through each ClassInfo, and query it's schema, any columns removed/added try and handle
+
+    Handle Multi Level Foreign Keys Right now only single level down is supported.
+
+Implement:
+    UPDATE
+    REPLACE

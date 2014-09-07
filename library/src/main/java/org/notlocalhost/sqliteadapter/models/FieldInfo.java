@@ -20,10 +20,12 @@ public class FieldInfo {
     private Field field;
     private String name;
     private Type type;
-    private Class<?> fieldType;
+    private java.lang.reflect.Type fieldType;
 
     private Logical logical;
     private Operator[] operators;
+
+    private boolean foreignKey;
 
     public void setField(Field field) {
         this.field = field;
@@ -40,10 +42,12 @@ public class FieldInfo {
     public void setLogical(Logical logical) {
         this.logical = logical;
     }
-    public void setFieldType(Class<?> fieldType) {
+    public void setFieldType(java.lang.reflect.Type fieldType) {
         this.fieldType = fieldType;
     }
-
+    public void setForeignKey(boolean foreignKey) {
+        this.foreignKey = foreignKey;
+    }
 
     public Field getField() {
         return this.field;
@@ -60,7 +64,10 @@ public class FieldInfo {
     public String getOperatorString() {
         return "=";
     }
-    public Class<?> getFieldType() {
+    public java.lang.reflect.Type getFieldType() {
         return this.fieldType;
+    }
+    public boolean isForeignKey() {
+        return this.foreignKey;
     }
 }

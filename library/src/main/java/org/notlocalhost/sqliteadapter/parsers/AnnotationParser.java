@@ -1,6 +1,6 @@
 package org.notlocalhost.sqliteadapter.parsers;
 
-import org.notlocalhost.sqliteadapter.annotations.ColumnName;
+import org.notlocalhost.sqliteadapter.annotations.Column;
 import org.notlocalhost.sqliteadapter.annotations.DELETE;
 import org.notlocalhost.sqliteadapter.annotations.INSERT;
 import org.notlocalhost.sqliteadapter.annotations.QUERY;
@@ -15,14 +15,10 @@ import org.notlocalhost.sqliteadapter.models.MethodInfo;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 /**
  * Created by pedlar on 8/31/14.
- */
-/*
-    TODO:
-        Safeguard against having @Where and @ColumnName on paramater.
-        Safeguard Class against implements Schema interface.
  */
 public class AnnotationParser {
     Method mMethod;
@@ -76,31 +72,42 @@ public class AnnotationParser {
     }
 
     private void parseMethodParamaterAnnotations(MethodInfo methodInfo) {
-        Class<?>[] parameterTypes = mMethod.getParameterTypes();
+        Type[] parameterTypes = mMethod.getGenericParameterTypes();
 
         Annotation[][] parameterAnnotationArrays = mMethod.getParameterAnnotations();
         int count = parameterAnnotationArrays.length;
 
         for (int i = 0; i < count; i++) {
-            Class<?> parameterType = parameterTypes[i];
+            Type parameterType = parameterTypes[i];
             Annotation[] parameterAnnotations = parameterAnnotationArrays[i];
             if (parameterAnnotations != null) {
                 for (Annotation parameterAnnotation : parameterAnnotations) {
                     Class<? extends Annotation> annotationType = parameterAnnotation.annotationType();
-                    FieldInfo fieldInfo = parseFieldAnnotation(parameterAnnotation, annotationType);
-
+                    FieldInfo fieldInfo = parseFieldAnnotation("", parameterAnnotation, annotationType);
+                    fieldInfo.setFieldType(parameterType);
                     methodInfo.addParamater(i, fieldInfo);
                 }
             }
         }
     }
 
-    private FieldInfo parseFieldAnnotation(Annotation fieldAnnotation, Class<? extends Annotation> annotationType) {
+    private FieldInfo parseFieldAnnotation(String fieldName, Annotation fieldAnnotation, Class<? extends Annotation> annotationType) {
         FieldInfo fieldInfo = new FieldInfo();
-        if (annotationType == ColumnName.class) {
-            String name = ((ColumnName) fieldAnnotation).value();
-            fieldInfo.setName(name);
+        if (annotationType == Column.class) {
+            String name = ((Column) fieldAnnotation).name();
+            if(name.length() == 0) {
+                fieldInfo.setName(fieldName);
+            } else {
+                fieldInfo.setName(name);
+            }
+            if(fieldInfo.getName() == null || fieldInfo.getName().length() == 0) {
+                throw new IllegalArgumentException("@Column must have a name when declating method");
+            }
+
             fieldInfo.setType(FieldInfo.Type.COLUMN_NAME);
+
+            boolean foreignKey = ((Column)fieldAnnotation).foreignKey();
+            fieldInfo.setForeignKey(foreignKey);
         } else if (annotationType == Where.class) {
             String name = ((Where) fieldAnnotation).value();
             FieldInfo.Logical logical = ((Where)fieldAnnotation).logical();
@@ -118,10 +125,10 @@ public class AnnotationParser {
             FieldInfo parseField = new FieldInfo();
             for(Annotation fieldAnnotation : field.getAnnotations()) {
                 Class<? extends Annotation> annotationType = fieldAnnotation.annotationType();
-                parseField = parseFieldAnnotation(fieldAnnotation, annotationType);
+                parseField = parseFieldAnnotation(field.getName(), fieldAnnotation, annotationType);
             }
             parseField.setField(field);
-            parseField.setFieldType(field.getType());
+            parseField.setFieldType(field.getGenericType());
             classInfo.addClassField(parseField);
         }
 

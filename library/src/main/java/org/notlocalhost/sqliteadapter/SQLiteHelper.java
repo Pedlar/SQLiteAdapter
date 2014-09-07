@@ -7,8 +7,10 @@ import android.util.Log;
 
 import org.notlocalhost.sqliteadapter.models.ClassInfo;
 import org.notlocalhost.sqliteadapter.models.FieldInfo;
+import org.notlocalhost.sqliteadapter.parsers.TypeToken;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,23 +19,18 @@ import java.util.List;
  */
 public class SQLiteHelper extends SQLiteOpenHelper {
     WeakReference<Context> mWeakContext;
-    WeakReference<SQLiteAdapter> mWeakAdapter;
+    WeakReference<AdapterContext> mWeakAdapterContext;
     List<ClassInfo> mClassInfoList = new ArrayList<ClassInfo>();
 
-    public SQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
-    }
-
-    public SQLiteHelper(Context context, String name, int version, List<ClassInfo> classInfoList, SQLiteAdapter adapter) {
+    public SQLiteHelper(Context context, String name, int version, List<ClassInfo> classInfoList, AdapterContext adapterContext) {
         super(context, name, null, version);
         mWeakContext = new WeakReference<Context>(context);
-        mWeakAdapter = new WeakReference<SQLiteAdapter>(adapter);
+        mWeakAdapterContext = new WeakReference<AdapterContext>(adapterContext);
         mClassInfoList = classInfoList;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.d("SQLiteAdapter", "SQLiteHelper: onCreate()");
         for(ClassInfo classInfo : mClassInfoList) {
             createTableIfNotExist(db, classInfo);
         }
@@ -41,48 +38,73 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.d("SQLiteAdapter", "SQLiteHelper: onUpgrade()");
+
     }
 
     @Override
     public void onOpen(SQLiteDatabase db) {
-        Log.d("SQLiteAdapter", "SQLiteHelper: onOpen()");
+
     }
 
     private void createTableIfNotExist(SQLiteDatabase db, ClassInfo classInfo) {
+        createTableIfNotExist(db, classInfo, false);
+    }
+
+    private void createTableIfNotExist(SQLiteDatabase db, ClassInfo classInfo, boolean foreign) {
+        long start = System.currentTimeMillis();
         StringBuilder createSQL = new StringBuilder();
         createSQL.append("CREATE TABLE IF NOT EXISTS ");
         createSQL.append(classInfo.getTableName());
         createSQL.append(" (");
+        if(foreign) {
+            createSQL.append(Constants.FOREIGN_PREFIX + "id INTEGER,");
+            createSQL.append(Constants.FOREIGN_PREFIX + "column TEXT,");
+        }
         for(FieldInfo fieldInfo : classInfo.getClassFields()) {
             if(fieldInfo.getType() == FieldInfo.Type.COLUMN_NAME) {
-                createSQL.append(fieldInfo.getName());
-                createSQL.append(" ");
-                createSQL.append(getSQLType(fieldInfo.getFieldType()));
-                createSQL.append(",");
+                if(fieldInfo.isForeignKey()) {
+                    AdapterContext aContext = mWeakAdapterContext.get();
+                    if(aContext != null) {
+                        ClassInfo foreignClass = aContext.getClassInfo(fieldInfo.getFieldType());
+                        String origName = foreignClass.getTableName();
+                        foreignClass.setTableName(Constants.FOREIGN_PREFIX + foreignClass.getTableName());
+                        createTableIfNotExist(db, foreignClass, true);
+                        foreignClass.setTableName(origName);
+                    } else {
+                        Log.wtf("SQLiteAdapter", "aContext was null, that's not right...");
+                    }
+                } else {
+                    createSQL.append(fieldInfo.getName());
+                    createSQL.append(" ");
+                    createSQL.append(getSQLType(fieldInfo.getFieldType()));
+                    createSQL.append(",");
+                }
             }
         }
         createSQL.deleteCharAt(createSQL.length()-1);
         createSQL.append(");");
-        Log.d("SQLiteAdapter", "CREATE: " + createSQL.toString());
         db.execSQL(createSQL.toString());
+
+        long totalMs = System.currentTimeMillis() - start;
+        Log.d("SQLiteAdapter", "Create Table " + classInfo.getTableName() + " " + totalMs + "ms");
     }
 
-    private String getSQLType(Class<?> fieldType) {
-        if(String.class.isAssignableFrom(fieldType)) {
+    private String getSQLType(Type fieldType) {
+        Class<?> rawType = TypeToken.get(fieldType).getRawType();
+        if(String.class.isAssignableFrom(rawType)) {
             return "TEXT";
-        } else if(Number.class.isAssignableFrom(fieldType)) {
+        } else if(Number.class.isAssignableFrom(rawType)) {
             return "INTEGER";
-        } else if(fieldType.isPrimitive()) {
-            if( int.class.isAssignableFrom(fieldType)
-             || long.class.isAssignableFrom(fieldType)
-             || double.class.isAssignableFrom(fieldType)
-             || float.class.isAssignableFrom(fieldType)
-             || short.class.isAssignableFrom(fieldType)) {
+        } else if(rawType.isPrimitive()) {
+            if( int.class.isAssignableFrom(rawType)
+             || long.class.isAssignableFrom(rawType)
+             || double.class.isAssignableFrom(rawType)
+             || float.class.isAssignableFrom(rawType)
+             || short.class.isAssignableFrom(rawType)) {
                 return "INTEGER";
             }
         }
-        Log.w("SQLiteAdapter", "Using a non supported type " + fieldType.getName());
+        Log.w("SQLiteAdapter", "Using a non supported type " + rawType.getName());
         return "TEXT";
     }
 }

@@ -14,6 +14,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Target({ FIELD, PARAMETER })
 @Retention(RUNTIME)
-public @interface ColumnName {
-    String value();
+public @interface Column {
+    String name() default "";
+    boolean foreignKey() default false;
 }

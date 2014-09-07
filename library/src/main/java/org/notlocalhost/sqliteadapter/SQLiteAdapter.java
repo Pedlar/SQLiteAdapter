@@ -1,7 +1,6 @@
 package org.notlocalhost.sqliteadapter;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import org.notlocalhost.sqliteadapter.models.ClassInfo;
@@ -14,6 +13,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,6 @@ public class SQLiteAdapter implements AdapterContext {
 
     @SuppressWarnings("unchecked")
     public <T> T create(Class<T> service) {
-        Log.d(SQLiteAdapter.class.getCanonicalName(), "create: " + service.getClass().getCanonicalName());
         if (!service.isInterface()) {
             throw new IllegalArgumentException("Only interfaces are supported.");
         }
@@ -62,7 +62,10 @@ public class SQLiteAdapter implements AdapterContext {
     public ClassInfo getClassInfo(Type type) {
         synchronized (mClassInfoCache) {
             TypeToken<?> typeToken = TypeToken.get(type);
-            ClassInfo classInfo = mClassInfoCache.get(typeToken.getRawType());
+            if(Collection.class.isAssignableFrom(typeToken.getRawType())) {
+                typeToken = TypeToken.get(HelperUtils.getCollectionElementType(typeToken.getType()));
+            }
+            ClassInfo classInfo = mClassInfoCache.get(typeToken.getType());
             if(classInfo == null) {
                 AnnotationParser annotationParser = new AnnotationParser(typeToken.getRawType());
                 classInfo = annotationParser.createClassInfo();
@@ -70,6 +73,10 @@ public class SQLiteAdapter implements AdapterContext {
             }
             return classInfo;
         }
+    }
+
+    public SQLiteHelper getSqlHelper() {
+        return mSqliteHelper;
     }
 
     private class ProxyHandler implements InvocationHandler {
@@ -84,15 +91,21 @@ public class SQLiteAdapter implements AdapterContext {
             }
             MethodInfo methodInfo = getMethodInfo(method);
 
-            return proxyInvoke(methodInfo, args);
+            return proxyInvoke(method.getName(), methodInfo, args);
         }
     }
 
-    private Object proxyInvoke(MethodInfo methodInfo, Object[] args) {
-        Invocation invocation = InvocationFactory.manufactur(methodInfo, args);
-        Log.d(SQLiteAdapter.class.getCanonicalName(), "proxyInvoke: " + invocation.getClass().getCanonicalName());
+    private Object proxyInvoke(String methodName, MethodInfo methodInfo, Object[] args) {
+        Log.d("SQLiteAdapter", "-> @" + methodInfo.getType().name() + " " + methodName + "(" + Arrays.toString(args) + ")");
+        Invocation invocation = InvocationFactory.manufacture(this, methodInfo, args);
+
+        long start = System.currentTimeMillis();
         Object responseObject = invocation.invokeCommand(this, mSqliteHelper);
 
+        long totalMs = System.currentTimeMillis() - start;
+        Log.d("SQLiteAdapter", "<- @" + methodInfo.getType().name() + " " + methodName + ": "
+                + (responseObject != null ? responseObject.toString() : "NULL")
+                + " " + totalMs + "ms");
         return responseObject;
     }
 
