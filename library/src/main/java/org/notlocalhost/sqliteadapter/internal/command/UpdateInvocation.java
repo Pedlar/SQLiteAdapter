@@ -1,11 +1,14 @@
-package org.notlocalhost.sqliteadapter;
+package org.notlocalhost.sqliteadapter.internal.command;
 
+import org.notlocalhost.sqliteadapter.AdapterContext;
+import org.notlocalhost.sqliteadapter.SQLiteHelper;
 import org.notlocalhost.sqliteadapter.models.MethodInfo;
 
 /**
  * Created by pedlar on 8/31/14.
+ *
  */
-public class UpdateInvocation implements Invocation {
+class UpdateInvocation implements Invocation {
     public UpdateInvocation(MethodInfo method, Object[] args) {
 
     }

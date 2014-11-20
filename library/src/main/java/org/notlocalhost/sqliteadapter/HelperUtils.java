@@ -14,6 +14,7 @@ import java.util.List;
 
 /**
  * Created by pedlar on 9/6/14.
+ *
  */
 public class HelperUtils {
     private HelperUtils() {

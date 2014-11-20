@@ -1,10 +1,12 @@
-package org.notlocalhost.sqliteadapter;
+package org.notlocalhost.sqliteadapter.internal.command;
 
 import android.content.ContentValues;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
+import org.notlocalhost.sqliteadapter.AdapterContext;
+import org.notlocalhost.sqliteadapter.Constants;
+import org.notlocalhost.sqliteadapter.HelperUtils;
+import org.notlocalhost.sqliteadapter.SQLiteHelper;
 import org.notlocalhost.sqliteadapter.models.ClassInfo;
 import org.notlocalhost.sqliteadapter.models.FieldInfo;
 import org.notlocalhost.sqliteadapter.models.MethodInfo;
@@ -18,8 +20,9 @@ import java.util.List;
 
 /**
  * Created by pedlar on 8/31/14.
+ *
  */
-public class InsertInvocation implements Invocation {
+class InsertInvocation implements Invocation {
     List<ForeignInsert> foreignInserts = new ArrayList<ForeignInsert>();
     ContentValues contentValues = new ContentValues();
     String tableName;

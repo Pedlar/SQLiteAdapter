@@ -8,7 +8,11 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Created by pedlar on 8/30/14.
+ *
+ * Make a DELETE call to the SQL Database
+ *
+ * Requires {@link org.notlocalhost.sqliteadapter.annotations.TableName} annotation to be present
+ *
  */
 @Documented
 @Target(METHOD)

@@ -3,6 +3,8 @@ package org.notlocalhost.sqliteadapter;
 import android.content.Context;
 import android.util.Log;
 
+import org.notlocalhost.sqliteadapter.internal.command.Invocation;
+import org.notlocalhost.sqliteadapter.internal.command.InvocationFactory;
 import org.notlocalhost.sqliteadapter.models.ClassInfo;
 import org.notlocalhost.sqliteadapter.models.MethodInfo;
 import org.notlocalhost.sqliteadapter.parsers.AnnotationParser;

@@ -16,6 +16,7 @@ import java.util.List;
 
 /**
  * Created by pedlar on 8/31/14.
+ *
  */
 public class SQLiteHelper extends SQLiteOpenHelper {
     WeakReference<Context> mWeakContext;

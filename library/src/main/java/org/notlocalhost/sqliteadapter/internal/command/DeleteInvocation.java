@@ -1,15 +1,18 @@
-package org.notlocalhost.sqliteadapter;
+package org.notlocalhost.sqliteadapter.internal.command;
 
 import android.database.sqlite.SQLiteDatabase;
 
-import org.notlocalhost.sqliteadapter.models.FieldInfo;
+import org.notlocalhost.sqliteadapter.AdapterContext;
+import org.notlocalhost.sqliteadapter.HelperUtils;
+import org.notlocalhost.sqliteadapter.SQLiteHelper;
 import org.notlocalhost.sqliteadapter.models.MethodInfo;
 import org.notlocalhost.sqliteadapter.models.WhereStatement;
 
 /**
  * Created by pedlar on 8/31/14.
+ *
  */
-public class DeleteInvocation implements Invocation {
+class DeleteInvocation implements Invocation {
     String tableName;
     WhereStatement whereStatement;
     public DeleteInvocation(MethodInfo method, Object[] args) {

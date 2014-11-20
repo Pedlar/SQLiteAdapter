@@ -10,7 +10,8 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Created by pedlar on 8/31/14.
+ *
+ * WHERE paramater for the SQLite Database Calls
  */
 @Documented
 @Target(PARAMETER)

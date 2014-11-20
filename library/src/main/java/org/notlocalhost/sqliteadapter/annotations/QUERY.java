@@ -8,7 +8,11 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Created by pedlar on 8/31/14.
+ *
+ * Make a SELECT call to the SQL Database and returns the Results
+ *
+ * Requires {@link org.notlocalhost.sqliteadapter.annotations.TableName} annotation to be present
+ *
  */
 @Documented
 @Target(METHOD)

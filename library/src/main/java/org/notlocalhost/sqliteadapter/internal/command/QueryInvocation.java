@@ -1,19 +1,20 @@
-package org.notlocalhost.sqliteadapter;
+package org.notlocalhost.sqliteadapter.internal.command;
 
-import android.database.CrossProcessCursor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
-import org.notlocalhost.sqliteadapter.models.FieldInfo;
+import org.notlocalhost.sqliteadapter.AdapterContext;
+import org.notlocalhost.sqliteadapter.HelperUtils;
+import org.notlocalhost.sqliteadapter.SQLiteHelper;
 import org.notlocalhost.sqliteadapter.models.MethodInfo;
 import org.notlocalhost.sqliteadapter.models.WhereStatement;
 import org.notlocalhost.sqliteadapter.parsers.CursorParser;
 
 /**
  * Created by pedlar on 8/31/14.
+ *
  */
-public class QueryInvocation implements Invocation {
+class QueryInvocation implements Invocation {
     private StringBuilder queryString = new StringBuilder();
     private MethodInfo methodInfo;
     private WhereStatement whereStatement;

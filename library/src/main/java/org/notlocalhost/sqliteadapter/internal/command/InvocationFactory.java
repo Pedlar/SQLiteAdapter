@@ -1,12 +1,14 @@
-package org.notlocalhost.sqliteadapter;
+package org.notlocalhost.sqliteadapter.internal.command;
 
+import org.notlocalhost.sqliteadapter.AdapterContext;
 import org.notlocalhost.sqliteadapter.models.MethodInfo;
 
 /**
  * Created by pedlar on 8/31/14.
+ *
  */
-class InvocationFactory {
-    static Invocation manufacture(AdapterContext adapterContext, MethodInfo method, Object[] args) {
+public final class InvocationFactory {
+    public static Invocation manufacture(AdapterContext adapterContext, MethodInfo method, Object[] args) {
         switch (method.getType()) {
             case INSERT:
                 return new InsertInvocation(adapterContext, method, args);
