@@ -1,0 +1,5 @@
+org.notlocalhost.sqliteadapter
+org.notlocalhost.sqliteadapter.annotations
+org.notlocalhost.sqliteadapter.internal.command
+org.notlocalhost.sqliteadapter.models
+org.notlocalhost.sqliteadapter.parsers
