@@ -49,6 +49,29 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         assertEquals(testLong, testData.test_column3);
     }
 
+    public void testAdapterUpdateQuery() {
+        TestInterface testInterface = adapter.create(TestInterface.class);
+        String col1 = "TestData1";
+        int testInt = 42;
+        long testLong = 424242424242l;
+        testInterface.setTestData(col1, testInt, testLong);
+
+        TestTable testData = testInterface.getTestData(col1);
+        assertEquals(col1, testData.test_column1);
+        assertEquals(testInt, testData.test_column2);
+        assertEquals(testLong, testData.test_column3);
+
+        testInt += 2;
+        testLong += 2;
+        col1 = "TestData42";
+
+        testInterface.updateTestData(col1, testInt, testLong);
+        TestTable testData2 = testInterface.getTestData(col1);
+        assertEquals(col1, testData2.test_column1);
+        assertEquals(testInt, testData2.test_column2);
+        assertEquals(testLong, testData2.test_column3);
+
+    }
 
     /* This test is just to make sure Foreign Keys are working at a low level */
     public void testAdapterQueryWithForeignDirect() {

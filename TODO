@@ -19,3 +19,5 @@ Table Schema:
 Implement:
     UPDATE
     REPLACE
+
+    UPDATE with foreign key

@@ -5,6 +5,7 @@ import org.notlocalhost.sqliteadapter.annotations.DELETE;
 import org.notlocalhost.sqliteadapter.annotations.INSERT;
 import org.notlocalhost.sqliteadapter.annotations.QUERY;
 import org.notlocalhost.sqliteadapter.annotations.TableName;
+import org.notlocalhost.sqliteadapter.annotations.UPDATE;
 import org.notlocalhost.sqliteadapter.annotations.Where;
 
 import java.util.ArrayList;
@@ -27,6 +28,12 @@ public interface TestInterface {
     public long setTestData(@Column(name = "test_column1") String testData,
                             @Column(name = "test_column2") int testInt,
                             @Column(name = "test_column3") long testLong);
+
+    @UPDATE
+    @TableName("TestTable")
+    public long updateTestData(@Column(name = "test_column1") String testData,
+                               @Column(name = "test_column2") int testInt,
+                               @Column(name = "test_column3") long testLong);
 
     @INSERT
     @TableName(Constants.FOREIGN_PREFIX + "TestForeignTable")

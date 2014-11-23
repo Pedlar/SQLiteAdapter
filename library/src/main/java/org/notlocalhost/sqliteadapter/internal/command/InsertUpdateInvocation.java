@@ -10,6 +10,7 @@ import org.notlocalhost.sqliteadapter.SQLiteHelper;
 import org.notlocalhost.sqliteadapter.models.ClassInfo;
 import org.notlocalhost.sqliteadapter.models.FieldInfo;
 import org.notlocalhost.sqliteadapter.models.MethodInfo;
+import org.notlocalhost.sqliteadapter.models.WhereStatement;
 import org.notlocalhost.sqliteadapter.parsers.TypeToken;
 
 import java.lang.reflect.Field;
@@ -22,12 +23,20 @@ import java.util.List;
  * Created by pedlar on 8/31/14.
  *
  */
-class InsertInvocation implements Invocation {
+class InsertUpdateInvocation implements Invocation {
+    public enum InvocationType {
+        INSERT, UPDATE
+    }
     List<ForeignInsert> foreignInserts = new ArrayList<ForeignInsert>();
     ContentValues contentValues = new ContentValues();
     String tableName;
-    public InsertInvocation(AdapterContext adapterContext, MethodInfo method, Object[] args) {
+    InvocationType invocationType;
+    WhereStatement whereStatement;
+
+    public InsertUpdateInvocation(AdapterContext adapterContext, MethodInfo method, Object[] args, InvocationType type) {
+        invocationType = type;
         tableName = method.getTableName();
+        whereStatement = HelperUtils.constructWhere(method, args);
         for(int i = 0; i < args.length; i++) {
             FieldInfo fieldInfo = method.getParamater(i);
             if(fieldInfo.getType() == FieldInfo.Type.COLUMN_NAME) {
@@ -73,13 +82,31 @@ class InsertInvocation implements Invocation {
         db.beginTransaction();
         long id = -1;
         try {
-            id = db.insert(tableName, null, contentValues);
+            switch (invocationType) {
+                case INSERT:
+                    id = db.insert(tableName, null, contentValues);
 
-            for(ForeignInsert foreignInsert : foreignInserts) {
-                foreignInsert.contentValues.put(Constants.FOREIGN_PREFIX + "id", id);
-                foreignInsert.contentValues.put(Constants.FOREIGN_PREFIX + "column", foreignInsert.columnName);
-                db.insert(foreignInsert.tableName, null, foreignInsert.contentValues);
+                    for(ForeignInsert foreignInsert : foreignInserts) {
+                        foreignInsert.contentValues.put(Constants.FOREIGN_PREFIX + "id", id);
+                        foreignInsert.contentValues.put(Constants.FOREIGN_PREFIX + "column", foreignInsert.columnName);
+                        db.insert(foreignInsert.tableName, null, foreignInsert.contentValues);
+                    }
+                    break;
+                case UPDATE:
+                    id = db.update(tableName, contentValues,
+                            whereStatement != null ? whereStatement.whereClause : null,
+                            whereStatement != null ? whereStatement.whereArgs : null);
+
+                    for(ForeignInsert foreignInsert : foreignInserts) {
+                        foreignInsert.contentValues.put(Constants.FOREIGN_PREFIX + "id", id);
+                        foreignInsert.contentValues.put(Constants.FOREIGN_PREFIX + "column", foreignInsert.columnName);
+                        db.update(foreignInsert.tableName, foreignInsert.contentValues,
+                                Constants.FOREIGN_PREFIX + "id = ? AND " + Constants.FOREIGN_PREFIX + "column = ? ",
+                                new String[] { Long.toString(id), foreignInsert.columnName});
+                    }
+
             }
+
 
             db.setTransactionSuccessful();
         } finally {
