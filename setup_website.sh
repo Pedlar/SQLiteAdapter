@@ -23,7 +23,7 @@ git checkout -t origin/gh-pages
 rm -rf *
 
 # Copy website files from real repo
-cp -R ../website/* .
+# cp -R ../website/* .
 
 # Download the latest javadoc
 #curl -L "https://search.maven.org/remote_content?g=$GROUP_ID&a=$ARTIFACT_ID&v=LATEST&c=javadoc" > javadoc.zip

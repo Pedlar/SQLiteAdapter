@@ -24,15 +24,16 @@ class DeleteInvocation implements Invocation {
     public Object invokeCommand(AdapterContext adapterContext, SQLiteHelper sqLiteHelper) {
         SQLiteDatabase db = null;
         int affected = 0;
+        db = sqLiteHelper.getWritableDatabase();
+        db.beginTransaction();
         try {
-            db = sqLiteHelper.getWritableDatabase();
             affected = db.delete(tableName,
                     whereStatement != null ? whereStatement.whereClause : "1",
                     whereStatement != null ? whereStatement.whereArgs : new String[]{});
+            db.setTransactionSuccessful();
         } finally {
-            if( db != null ) {
-                db.close();
-            }
+            db.endTransaction();
+            db.close();
         }
         return affected;
     }

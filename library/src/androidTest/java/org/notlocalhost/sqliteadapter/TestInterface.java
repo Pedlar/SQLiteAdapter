@@ -30,11 +30,17 @@ public interface TestInterface {
 
     @INSERT
     @TableName(Constants.FOREIGN_PREFIX + "TestForeignTable")
-    public long setTestForeignCol4(@Column(name = Constants.FOREIGN_PREFIX + "id") long foreignKey, @Column(name = Constants.FOREIGN_PREFIX + "column") String column, @Column(name = "name") String myName, @Column(name = "description") String myDesc);
+    public long setTestForeignCol4(@Column(name = Constants.FOREIGN_PREFIX + "id") long foreignKey,
+                                   @Column(name = Constants.FOREIGN_PREFIX + "column") String column,
+                                   @Column(name = "name") String myName,
+                                   @Column(name = "description") String myDesc);
 
     @INSERT
     @TableName(Constants.FOREIGN_PREFIX + "TestForeignTable")
-    public long setTestForeignCol5(@Column(name = Constants.FOREIGN_PREFIX + "id") long foreignKey, @Column(name = Constants.FOREIGN_PREFIX + "column") String column, @Column(name = "name") String myName, @Column(name = "description") String myDesc);
+    public long setTestForeignCol5(@Column(name = Constants.FOREIGN_PREFIX + "id") long foreignKey,
+                                   @Column(name = Constants.FOREIGN_PREFIX + "column") String column,
+                                   @Column(name = "name") String myName,
+                                   @Column(name = "description") String myDesc);
 
 
     @INSERT
@@ -45,7 +51,7 @@ public interface TestInterface {
     @INSERT
     @TableName("TestTable")
     public long setTestForeignList(@Column(name = "test_column5", foreignKey = true) ArrayList<TestForeignTable> foreignTableList,
-                               @Column(name = "test_column1") String testData);
+                                   @Column(name = "test_column1") String testData);
 
     @DELETE
     @TableName("TestTable")
