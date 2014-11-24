@@ -1,6 +1,6 @@
 package org.notlocalhost.sqliteadapter.parsers;
 
-import org.notlocalhost.sqliteadapter.Util;
+import org.notlocalhost.sqliteadapter.Types;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -16,14 +16,14 @@ public class TypeToken<T> {
     @SuppressWarnings("unchecked")
     protected TypeToken() {
         this.type = getSuperclassTypeParameter(getClass());
-        this.rawType = (Class<? super T>) Util.getRawType(type);
+        this.rawType = (Class<? super T>) Types.getRawType(type);
         this.hashCode = type.hashCode();
     }
 
     @SuppressWarnings("unchecked")
     TypeToken(Type type) {
         this.type = type;
-        this.rawType = (Class<? super T>) Util.getRawType(this.type);
+        this.rawType = (Class<? super T>) Types.getRawType(this.type);
         this.hashCode = this.type.hashCode();
     }
 

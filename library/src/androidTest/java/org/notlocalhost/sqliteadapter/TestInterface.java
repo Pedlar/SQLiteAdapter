@@ -11,6 +11,8 @@ import org.notlocalhost.sqliteadapter.annotations.Where;
 import java.util.ArrayList;
 import java.util.List;
 
+import rx.Observable;
+
 /**
  * Created by pedlar on 8/31/14.
  */
@@ -18,6 +20,14 @@ public interface TestInterface {
     @QUERY
     @TableName("TestTable")
     public TestTable getTestData(@Where("test_column1") String testData);
+
+    @QUERY
+    @TableName("TestTable")
+    public Observable<TestTable> getTestDataObservable(@Where("test_column1") String testData);
+
+    @QUERY
+    @TableName("TestTable")
+    public  Observable<ArrayList<TestTable>> getTestDataObservableList(@Where("test_column1") String testData);
 
     @QUERY
     @TableName("TestTable")

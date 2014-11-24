@@ -7,6 +7,9 @@ import android.test.ApplicationTestCase;
 import java.util.ArrayList;
 import java.util.Random;
 
+import rx.Observable;
+import rx.functions.Action1;
+
 /**
  * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
  */

@@ -43,7 +43,7 @@ class InsertUpdateInvocation implements Invocation {
                 if(fieldInfo.isForeignKey()) {
                     TypeToken typeToken = TypeToken.get(fieldInfo.getFieldType());
                     if(Collection.class.isAssignableFrom(typeToken.getRawType())) {
-                        Type enclosingType = HelperUtils.getCollectionElementType(typeToken.getType());
+                        Type enclosingType = HelperUtils.getGenericsElementType(typeToken.getType());
                         for(Object obj : Collection.class.cast(args[i])) {
                             addForeignInsert(adapterContext, fieldInfo.getName(), enclosingType, obj);
                         }

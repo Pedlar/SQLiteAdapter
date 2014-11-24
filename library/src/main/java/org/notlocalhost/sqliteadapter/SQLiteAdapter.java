@@ -20,6 +20,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  *
@@ -31,6 +36,7 @@ public class SQLiteAdapter implements AdapterContext {
     protected final Map<Method, MethodInfo> mMethodInfoCache = new HashMap<Method, MethodInfo>();
     protected final Map<Type, ClassInfo> mClassInfoCache = new HashMap<Type, ClassInfo>();
     protected SQLiteHelper mSqliteHelper;
+    private ExecutorService mThreadExecutor = Executors.newCachedThreadPool();
 
     private SQLiteAdapter(Context context, String databaseName, int versionNumber, List<ClassInfo> classSchemas) {
         mSqliteHelper = new SQLiteHelper(context, databaseName, versionNumber, classSchemas, this);
@@ -65,7 +71,7 @@ public class SQLiteAdapter implements AdapterContext {
         synchronized (mClassInfoCache) {
             TypeToken<?> typeToken = TypeToken.get(type);
             if(Collection.class.isAssignableFrom(typeToken.getRawType())) {
-                typeToken = TypeToken.get(HelperUtils.getCollectionElementType(typeToken.getType()));
+                typeToken = TypeToken.get(HelperUtils.getGenericsElementType(typeToken.getType()));
             }
             ClassInfo classInfo = mClassInfoCache.get(typeToken.getType());
             if(classInfo == null) {
@@ -97,18 +103,38 @@ public class SQLiteAdapter implements AdapterContext {
         }
     }
 
-    private Object proxyInvoke(String methodName, MethodInfo methodInfo, Object[] args) {
-        Log.d("SQLiteAdapter", "-> @" + methodInfo.getType().name() + " " + methodName + "(" + Arrays.toString(args) + ")");
-        Invocation invocation = InvocationFactory.manufacture(this, methodInfo, args);
+    private Object proxyInvoke(final String methodName, final MethodInfo methodInfo, final Object[] args) {
+        Future<Object> responseFuture = mThreadExecutor.submit(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                Log.d("SQLiteAdapter", "-> @" + methodInfo.getType().name() + " " + methodName + "(" + Arrays.toString(args) + ")");
+                Invocation invocation = InvocationFactory.manufacture(SQLiteAdapter.this, methodInfo, args);
 
-        long start = System.currentTimeMillis();
-        Object responseObject = invocation.invokeCommand(this, mSqliteHelper);
+                long start = System.currentTimeMillis();
+                Object responseObject = invocation.invokeCommand(SQLiteAdapter.this, mSqliteHelper);
 
-        long totalMs = System.currentTimeMillis() - start;
-        Log.d("SQLiteAdapter", "<- @" + methodInfo.getType().name() + " " + methodName + ": "
-                + (responseObject != null ? responseObject.toString() : "NULL")
-                + " " + totalMs + "ms");
-        return responseObject;
+                long totalMs = System.currentTimeMillis() - start;
+                Log.d("SQLiteAdapter", "<- @" + methodInfo.getType().name() + " " + methodName + ": "
+                        + (responseObject != null ? responseObject.toString() : "NULL")
+                        + " " + totalMs + "ms");
+                return responseObject;
+            }
+        });
+
+        if(RxJavaSupport.isRxJavaIncluded()) {
+            if(methodInfo.isObservable()) {
+                return RxJavaSupport.createObservable(responseFuture);
+            }
+        }
+
+        try {
+            return responseFuture.get();
+        } catch (InterruptedException e) {
+            Log.e("SQLiteAdapter", "InterruptedException in Future handling SQL Call", e);
+        } catch (ExecutionException e) {
+            Log.e("SQLiteAdapter", "ExecutionException in Future handling SQL Call", e);
+        }
+        return null;
     }
 
     public static class Builder {

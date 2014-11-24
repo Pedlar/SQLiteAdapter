@@ -25,7 +25,7 @@ class CollectionParseAdapter<E> extends ParseAdapter<Collection<E>>{
         mParser = parser;
         aContext = context;
         this.typeToken = typeToken;
-        objectParseAdapter = ParseAdapterFactory.get(parser, context, TypeToken.get(HelperUtils.getCollectionElementType(typeToken.getType())));
+        objectParseAdapter = ParseAdapterFactory.get(parser, context, TypeToken.get(HelperUtils.getGenericsElementType(typeToken.getType())));
     }
 
     @Override
